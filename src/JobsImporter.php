@@ -6,16 +6,19 @@ class JobsImporter
 
     private string $file;
 
-    public function __construct(string $host, string $username, string $password, string $databaseName, string $file)
-    {
-        $this->file = $file;
-        
+    public function __construct(string $host, string $username, string $password, string $databaseName)
+    {   
         /* connect to DB */
         try {
             $this->db = new PDO('mysql:host=' . $host . ';dbname=' . $databaseName, $username, $password);
         } catch (Exception $e) {
             die('DB error: ' . $e->getMessage() . "\n");
         }
+    }
+
+    public function setFile(string $file): void
+    {
+        $this->file = $file;
     }
 
     private function _handleXmlFile(): array {
@@ -94,5 +97,11 @@ class JobsImporter
             $count++;
         }
         return $count;
+    }
+
+    public function deleteOldJobs(): void
+    {
+         /* remove existing items */
+        $this->db->exec('DELETE FROM job');
     }
 }

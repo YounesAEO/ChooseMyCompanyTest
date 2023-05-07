@@ -14,10 +14,15 @@ printMessage("Starting...");
 // create an array of filenames
 $files = array('regionsjob.xml', 'jobteaser.json');
 
+$jobsImporter = new JobsImporter(SQL_HOST, SQL_USER, SQL_PWD, SQL_DB);
+
+// delete old jobs
+$jobsImporter->deleteOldJobs();
+
 // loop through the array of files and echo them all
 foreach($files as $file){
-	/* import jobs from regionsjob.xml and jobteaser.json*/
-	$jobsImporter = new JobsImporter(SQL_HOST, SQL_USER, SQL_PWD, SQL_DB, RESSOURCES_DIR . $file);
+	/* import jobs from regionsjob.xml and jobteaser.json */
+	$jobsImporter->setFile(RESSOURCES_DIR . $file);
 	$count = $jobsImporter->importJobs();
 
 	printMessage("> {count} jobs imported from {file}.", ['{count}' => $count, '{file}' => $file]);
