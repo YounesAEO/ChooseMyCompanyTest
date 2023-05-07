@@ -36,13 +36,49 @@ class JobsImporter
         return $jobs;
     }
 
+    private function _handleJsonFile(): array {
+        // create a list of jobs from the json file
+        $json = file_get_contents($this->file);
+        $json = json_decode($json, true);
+        $jobs = [];
+
+        foreach ($json['offers'] as $item) {
+            $jobs[] = new Job(
+                (string) $item['reference'],
+                (string) $item['title'],
+                (string) $item['description'],
+                (string) $json['offerUrlPrefix'] . $item['urlPath'],
+                (string) $item['companyname'],
+                (string) $item['publishedDate']
+            );
+        }
+        
+        return $jobs;
+    }
+
+    private function _createJobsFromFile(): array
+    {
+        // check if file has an xml extension or json extension
+        $fileExtension = pathinfo($this->file, PATHINFO_EXTENSION);
+        
+        if($fileExtension == 'xml') {
+            return $this->_handleXmlFile();
+        } elseif($fileExtension == 'json') {
+            return $this->_handleJsonFile();
+        } else {
+            echo 'File extension not supported';
+        } 
+
+        return [];
+    }
+
     public function importJobs(): int
     {
         /* remove existing items */
         $this->db->exec('DELETE FROM job');
 
-        /* parse XML file */
-        $jobs = _handleXmlFile();
+        /* create a list of instances of Job class based on the file extension */
+        $jobs = $this->_createJobsFromFile();
 
         /* import each item */
         $count = 0;
