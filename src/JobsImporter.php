@@ -46,13 +46,14 @@ class JobsImporter
         $jobs = [];
 
         foreach ($json['offers'] as $item) {
+            $publication = date_create_from_format('D M d H:i:s e Y', $item['publishedDate']);
             $jobs[] = new Job(
                 (string) $item['reference'],
                 (string) $item['title'],
                 (string) $item['description'],
                 (string) $json['offerUrlPrefix'] . $item['urlPath'],
                 (string) $item['companyname'],
-                (string) $item['publishedDate']
+                (string) date_format($publication,"Y-m-d")
             );
         }
         
@@ -77,9 +78,6 @@ class JobsImporter
 
     public function importJobs(): int
     {
-        /* remove existing items */
-        $this->db->exec('DELETE FROM job');
-
         /* create a list of instances of Job class based on the file extension */
         $jobs = $this->_createJobsFromFile();
 
