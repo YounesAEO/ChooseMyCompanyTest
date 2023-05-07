@@ -18,24 +18,42 @@ class JobsImporter
         }
     }
 
+    private function _handleXmlFile(): array {
+        // create a list of jobs from the xml file
+        $xml = simplexml_load_file($this->file);
+        $jobs = [];
+        foreach ($xml->item as $item) {
+            $jobs[] = new Job(
+                (string) $item->ref,
+                (string) $item->title,
+                (string) $item->description,
+                (string) $item->url,
+                (string) $item->company,
+                (string) $item->pubDate
+            );
+        }
+
+        return $jobs;
+    }
+
     public function importJobs(): int
     {
         /* remove existing items */
         $this->db->exec('DELETE FROM job');
 
         /* parse XML file */
-        $xml = simplexml_load_file($this->file);
+        $jobs = _handleXmlFile();
 
         /* import each item */
         $count = 0;
-        foreach ($xml->item as $item) {
+        foreach ($jobs as $job) {
             $this->db->exec('INSERT INTO job (reference, title, description, url, company_name, publication) VALUES ('
-                . '\'' . addslashes($item->ref) . '\', '
-                . '\'' . addslashes($item->title) . '\', '
-                . '\'' . addslashes($item->description) . '\', '
-                . '\'' . addslashes($item->url) . '\', '
-                . '\'' . addslashes($item->company) . '\', '
-                . '\'' . addslashes($item->pubDate) . '\')'
+                . '\'' . addslashes($job->getReference()) . '\', '
+                . '\'' . addslashes($job->getTitle()) . '\', '
+                . '\'' . addslashes($job->getDescription()) . '\', '
+                . '\'' . addslashes($job->getUrl()) . '\', '
+                . '\'' . addslashes($job->getCompany()) . '\', '
+                . '\'' . addslashes($job->getPublication()) . '\')'
             );
             $count++;
         }
